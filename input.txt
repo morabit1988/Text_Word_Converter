@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 ZAKIA
 
 Hello World!
 
 Test Test Test
+=======
+Hello Wolrd!
+>>>>>>> 25f230b2df4e1f41045a3770d62bc0440a339fce
