@@ -4,6 +4,8 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from fpdf import FPDF
+import os
 
 def add_header(section, text="Document Header"):
     header = section.header
@@ -77,8 +79,35 @@ def convert_txt_to_word(input_file, output_file):
             para = doc.add_paragraph(stripped, style='Normal')
     doc.save(output_file)
 
+
+
     print(f"✅ Document sauvegardé sous : {output_file}")
     print("🔓 Mode Pro activé" if pro else "🔒 Mode Gratuit")
 
+
+def txt_to_pdf(input_file, output_file):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=12)
+
+    with open(input_file, 'r', encoding='utf-8') as file:
+        for line in file:
+            pdf.cell(200, 10, txt=line.strip(), ln=True)
+    pdf.output(output_file)
+    print(f"✅ Document sauvegardé sous : {output_file}")
+
+
+# 🔧 Exemple d'utilisation
+txt_file = "mon_fichier.txt"
+pdf_file = "mon_fichier.pdf"
+
+# Vérifie que le fichier .txt existe
+if os.path.exists(txt_file):
+    txt_to_pdf(txt_file, pdf_file)
+else:
+    print("Fichier texte introuvable.")
+
 # Exemple d'appel
 convert_txt_to_word("file_root/input.txt", "file_root/output.docx")
+txt_to_pdf("file_root/input.txt", "file_root/output.pdf")
