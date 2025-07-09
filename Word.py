@@ -58,7 +58,10 @@ def convert_txt_to_word(input_file, output_file):
 
     if not pro:
         content = content[:1000]
-        print("⚠️ Mode Gratuit activé : conversion limitée aux 1000 premiers caractères.")
+        print("⚠️Vous êtes en mode gratuit. Limite 1000 caractères appliquée.")
+    else:
+        print("🎉 Mode PRO activé ! Toutes les fonctionnalités sont disponibles.")
+
 
     doc = Document()
 
@@ -99,22 +102,24 @@ def txt_to_pdf(input_file, output_file):
 
     try:
         with open(input_file, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
+     
+            content = file.read()
+
     except FileNotFoundError:
         print(f"❌ Fichier non trouvé : {input_file}")
         return
 
     # Regroupement des lignes en paragraphes pour une meilleure lisibilité
-    paragraph = ""
-    for line in lines:
-        if line.strip():
-            paragraph += line.strip() + " "
-        else:
-            if paragraph:
-                pdf.multi_cell(0, 10, paragraph)
-                paragraph = ""
-    if paragraph:
-        pdf.multi_cell(0, 10, paragraph)
+
+    paragraph = content.split('\n\n')
+
+
+    for para in paragraph:
+        cleaned = para.strip().replace('\n', ' ')
+        if cleaned:
+            pdf.multi_cell(0, 10, cleaned)
+            pdf.ln(5)  # espace entre paragraphes
+
 
     pdf.output(output_file)
     print(f"✅ Document sauvegardé sous : {output_file}")
