@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 📝 TextToWordConverter
 
 A simple Python script that converts `.txt` files to `.docx` Word documents.
