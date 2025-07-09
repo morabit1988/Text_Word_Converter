@@ -6,6 +6,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from fpdf import FPDF
 import os
+import argparse
 
 def add_header(section, text="Document Header"):
     header = section.header
@@ -15,7 +16,6 @@ def add_header(section, text="Document Header"):
     run = paragraph.runs[0]
     run.font.size = Pt(12)
     run.font.name = 'Arial'
-
 def add_footer_with_page_numbers(section):
     footer = section.footer
     paragraph = footer.paragraphs[0]
@@ -109,5 +109,29 @@ else:
     print("Fichier texte introuvable.")
 
 # Exemple d'appel
-convert_txt_to_word("file_root/input.txt", "file_root/output.docx")
-txt_to_pdf("file_root/input.txt", "file_root/output.pdf")
+# convert_txt_to_word("C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/input.txt", "C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/output.docx")
+# txt_to_pdf("C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/input.txt", "C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/output.pdf")
+# ✅ Interface en ligne de commande
+def main():
+    parser = argparse.ArgumentParser(description="Convertir un fichier TXT en DOCX et/ou PDF")
+    parser.add_argument('--input', '-i', required=True, help='Chemin du fichier .txt à convertir')
+    parser.add_argument('--output', '-o', required=True, help='Nom du fichier de sortie sans e²xtension')
+    parser.add_argument('--docx', action='store_true', help='Générer un fichier Word (.docx)')
+    parser.add_argument('--pdf', action='store_true', help='Générer un fichier PDF (.pdf)')
+    args = parser.parse_args()
+
+    if not os.path.exists(args.input):
+        print(f"❌ Le fichier spécifié n'existe pas : {args.input}")
+        return
+
+    if args.docx:
+        convert_txt_to_word(args.input, args.output + '.docx')
+
+    if args.pdf:
+        txt_to_pdf(args.input, args.output + '.pdf')
+
+    if not args.docx and not args.pdf:
+        print("⚠️ Veuillez spécifier au moins --docx ou --pdf")
+
+if __name__ == '__main__':
+    main()
