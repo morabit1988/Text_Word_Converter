@@ -9,6 +9,9 @@ import os
 import argparse
 
 def add_header(section, text="Document Header"):
+    """
+    Ajoute un en-tête centré dans la section du document Word.
+    """
     header = section.header
     paragraph = header.paragraphs[0]
     paragraph.text = text
@@ -16,7 +19,11 @@ def add_header(section, text="Document Header"):
     run = paragraph.runs[0]
     run.font.size = Pt(12)
     run.font.name = 'Arial'
+
 def add_footer_with_page_numbers(section):
+    """
+    Ajoute un pied de page avec numéros de page centrés.
+    """
     footer = section.footer
     paragraph = footer.paragraphs[0]
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -36,6 +43,10 @@ def add_footer_with_page_numbers(section):
     run._r.append(fldChar2)
 
 def convert_txt_to_word(input_file, output_file):
+    """
+    Convertit un fichier .txt en document Word .docx.
+    En mode gratuit, limite le contenu à 1000 caractères.
+    """
     try:
         with open(input_file, 'r', encoding='utf-8') as file:
             content = file.read()
@@ -46,14 +57,14 @@ def convert_txt_to_word(input_file, output_file):
     pro = is_pro_user()
 
     if not pro:
-        content = content[:1000]  # Version gratuite : 1000 caractères max
-        print("⚠️ Mode Gratuit activé : seuls les 1000 premiers caractères seront convertis.")
+        content = content[:1000]
+        print("⚠️ Mode Gratuit activé : conversion limitée aux 1000 premiers caractères.")
 
     doc = Document()
 
-    # Mise en page
+    # Mise en page avec en-tête et pied de page
     section = doc.sections[0]
-    add_header(section)
+    add_header(section, text="Conversion TXT → DOCX")
     add_footer_with_page_numbers(section)
 
     # Style global
@@ -61,61 +72,57 @@ def convert_txt_to_word(input_file, output_file):
     style.font.name = 'Times New Roman'
     style.font.size = Pt(12)
 
-    # Ajout paragraphe par paragraphe avec détection de titres
+    # Ajout des paragraphes avec détection simple des titres
     for line in content.splitlines():
         stripped = line.strip()
-
-        # Ignore les lignes vides
         if not stripped:
             continue
 
-        # Détection simple des titres
-        if (stripped.isupper() or  # tout en MAJUSCULES
-                stripped.startswith('#') or
-                stripped.lower().startswith("titre") or
-                stripped.endswith(":")):
+        if (stripped.isupper() or stripped.startswith('#') or
+            stripped.lower().startswith("titre") or stripped.endswith(":")):
             para = doc.add_paragraph(stripped, style='Heading 1')
         else:
             para = doc.add_paragraph(stripped, style='Normal')
+
     doc.save(output_file)
-
-
-
     print(f"✅ Document sauvegardé sous : {output_file}")
     print("🔓 Mode Pro activé" if pro else "🔒 Mode Gratuit")
 
-
 def txt_to_pdf(input_file, output_file):
+    """
+    Convertit un fichier .txt en PDF simple, ligne par ligne.
+    """
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=12)
 
-    with open(input_file, 'r', encoding='utf-8') as file:
-        for line in file:
-            pdf.cell(200, 10, txt=line.strip(), ln=True)
+    try:
+        with open(input_file, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+    except FileNotFoundError:
+        print(f"❌ Fichier non trouvé : {input_file}")
+        return
+
+    # Regroupement des lignes en paragraphes pour une meilleure lisibilité
+    paragraph = ""
+    for line in lines:
+        if line.strip():
+            paragraph += line.strip() + " "
+        else:
+            if paragraph:
+                pdf.multi_cell(0, 10, paragraph)
+                paragraph = ""
+    if paragraph:
+        pdf.multi_cell(0, 10, paragraph)
+
     pdf.output(output_file)
     print(f"✅ Document sauvegardé sous : {output_file}")
 
-
-# 🔧 Exemple d'utilisation
-txt_file = "mon_fichier.txt"
-pdf_file = "mon_fichier.pdf"
-
-# Vérifie que le fichier .txt existe
-if os.path.exists(txt_file):
-    txt_to_pdf(txt_file, pdf_file)
-else:
-    print("Fichier texte introuvable.")
-
-# Exemple d'appel
-# convert_txt_to_word("C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/input.txt", "C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/output.docx")
-# txt_to_pdf("C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/input.txt", "C:/Users/hp/Desktop/Python_Projects_19-05-2025/Text_Word_Converter/output.pdf")
-# ✅ Interface en ligne de commande
 def main():
     parser = argparse.ArgumentParser(description="Convertir un fichier TXT en DOCX et/ou PDF")
     parser.add_argument('--input', '-i', required=True, help='Chemin du fichier .txt à convertir')
-    parser.add_argument('--output', '-o', required=True, help='Nom du fichier de sortie sans e²xtension')
+    parser.add_argument('--output', '-o', required=True, help='Nom du fichier de sortie sans extension')
     parser.add_argument('--docx', action='store_true', help='Générer un fichier Word (.docx)')
     parser.add_argument('--pdf', action='store_true', help='Générer un fichier PDF (.pdf)')
     args = parser.parse_args()
